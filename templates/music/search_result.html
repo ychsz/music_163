@@ -1,0 +1,194 @@
+{%extends 'music/base.html'%}
+{%block title%}搜索 "{{keyword}}" - 结果页{%endblock%}
+{%block content%}
+<style>
+    .result-info{
+        padding:12px 0;
+        border-bottom:1px solid #eee;
+        margin-bottom:20px;
+        color:#666;
+        font-size:14px;
+    }
+    .result-info strong{
+        color:#c20c0c;
+    }
+    .song-item{
+        display:flex;
+        align-items:center;
+        padding:10px 0;
+        border-bottom:1px solid #f0f0f0;
+    }
+    .song-item img{
+        width:50px;
+        height:50px;
+        margin-right:15px;
+        border-radius:3px;
+    }
+    .song-item a{
+        color:#333;
+        text-decoration:none;
+    }
+    .song-item a:hover{
+        color:#c20c0c;
+    }
+    .artist-grid{
+        display:grid;
+        grid-template-columns:repeat(5,1fr);
+        gap:20px;
+    }
+    .artist-card{
+        text-align:center;
+        border:1px solid #eee;
+        border-radius:6px;
+        padding:20px 10px;
+        transition:all 0.2s;
+    }
+    .artist-card:hover{
+        border-color:#c20c0c;
+        transform:translateY(-2px);
+    }
+    .artist-card img{
+        width:100px;
+        height:100px;
+        border-radius:50%;
+        object-fit:cover;
+        margin-bottom:8px;
+    }
+    .artist-card a{
+        color:#333;
+        text-decoration:none;
+        font-size:14px;
+    }
+    .artist-card a:hover{
+        color:#c20c0c;
+        transform:translateY(-2px);
+    }
+    .pagination{
+        margin-top:30px;
+        text-align:center;
+        font-size:14px;
+    }
+    .pagination a{
+        text-decoration:none;
+        color:#333;
+        padding:4px 10px;
+        border:1px solid #ddd;
+        border-radius:3px;
+        margin:0 3px;
+        display:inline-block;
+        vertical-align:middle;
+    }
+    .pagination a:hover{
+        border-color: #c20c0c;
+        color:#c20c0c;
+    }
+    .current-page{
+        font-weight:bold;
+        color:black;
+        padding:4px 10px;
+        margin:0 3px;
+        display:inline-block;
+        vertical-align:middle;
+    }
+    .pagination button{
+        padding:4px 10px;
+        border:1px solid #ddd;
+        border-radius:3px;
+        background-color:white;
+        color:#333;
+        cursor:pointer;
+        margin-left:5px;
+        vertical-align:middle;
+        font-size:14px;
+    }
+    .pagination button:hover{
+        border-color:#c20c0c;
+        color:#c20c0c;
+    }
+    .pagination input[type="number"]{
+        width:50px;
+        padding:3px 5px;
+        border:1px solid #ddd;
+        border-radius:3px;
+        margin:0 5px;
+        vertical-align:middle;
+        outline:none;
+    }
+    .pagination input[type="number"]:focus{
+        border-color:#c20c0c;
+    }
+    .pagination form{
+        display:inline-block;
+        margin-left:20px;
+        vertical-align:middle;
+    }
+</style>
+<div class="result-info">
+    搜索关键词：<strong>{{keyword}}</strong>
+    &nbsp;&nbsp;
+    共找到<strong>{{result_count}}</strong>条结果
+    &nbsp;&nbsp;
+    耗时：<strong>{{cost_time}}</strong>毫秒
+</div>
+{%if search_type == 'song'%}
+    <div class="song-list">
+        {%for song in page_obj%}
+            <div class="song-item">
+                <a href="{%url 'music:song_detail' song.song_id%}">
+                    <img src="{{song.album_pic}}" alt="{{song.song_name}}">
+                </a>
+                <div>
+                    <p>
+                        <a href="{%url 'music:song_detail' song.song_id%}">{{song.song_name}}</a>
+                    </p>
+                    <p>
+                        <a href="{%url 'music:artist_detail' song.artist_id%}">{{song.artist_name}}</a>
+                    </p>
+                </div>
+            </div>
+        {%empty%}
+            <p style="text-align:center;color:#999;padding:40px 0;">没有找到相关歌曲</p>
+        {%endfor%}
+    </div>
+{%elif search_type == 'artist'%}
+    <div class="artist-grid">
+        {%for artist in page_obj%}
+            <div class="artist-card">
+                <a href="{%url 'music:artist_detail' artist.artist_id%}">
+                    <img src="{{artist.artist_pic}}" alt="{{artist.artist_name}}">
+                    <p>{{artist.artist_name}}</p>
+                </a>
+            </div>
+        {%empty%}
+            <p style="grid-column:1/-1;text-align:center;color:#999;padding:40px 0;">没有找到相关歌手</p>
+        {%endfor%}
+    </div>
+{%endif%}
+<div class="pagination">
+    {%if current_page != 1%}
+        <a href="?keyword={{keyword}}&type={{search_type}}&page=1">首页</a>
+        <a href="?keyword={{keyword}}&type={{search_type}}&page={{current_page|add:-1}}">上一页</a>
+    {%endif%}
+    {%for num in page_numbers%}
+        {%if num == '...'%}
+            <span style="padding:0 5px;">...</span>
+        {%elif num == current_page%}
+            <span class="current-page">{{num}}</span>
+        {%else%}
+            <a href="?keyword={{keyword}}&type={{search_type}}&page={{num}}">{{num}}</a>
+        {%endif%}
+    {%endfor%}
+    {%if current_page != total_pages%}
+        <a href="?keyword={{keyword}}&type={{search_type}}&page={{current_page|add:1}}">下一页</a>
+        <a href="?keyword={{keyword}}&type={{search_type}}&page={{total_pages}}">尾页</a>
+    {%endif%}
+    <form action="" method="get" style="display: inline-block;margin-left:20px">
+        <input type="hidden" name="keyword" value="{{keyword}}">
+        <input type="hidden" name="type" value="{{search_type}}">
+        <span>跳转到</span>
+        <input type="number" name="page" value="{{current_page}}" style="width:50px;margin:0 5px;">
+        <span>页</span>
+        <button type="submit" style="margin-left:5px;">跳转</button>
+    </form>
+</div>
+{%endblock%}
