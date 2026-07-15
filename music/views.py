@@ -4,6 +4,7 @@ from django.conf import settings
 from django.shortcuts import render,redirect,reverse
 from django.core.paginator import Paginator
 from django.http import HttpResponseBadRequest
+from django.views.decorators.csrf import csrf_exempt
 from .models import Comment
 def load_songs():
     file_path=settings.BASE_DIR/'songs.json'
@@ -60,6 +61,7 @@ def song_list(request):
         'page_numbers':page_numbers,
     }
     return render(request,'music/song_list.html',context)
+@csrf_exempt
 def song_detail(request,song_id):
     song=get_song_by_id(song_id)
     if not song:
@@ -75,6 +77,7 @@ def song_detail(request,song_id):
         'comments':comments,
     }
     return render(request,'music/song_detail.html',context)
+@csrf_exempt
 def delete_comment(request,comment_id):
     if request.method!='POST':
         return HttpResponseBadRequest("请求方式错误")
